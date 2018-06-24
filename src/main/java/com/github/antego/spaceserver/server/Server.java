@@ -36,19 +36,19 @@ public class Server {
                     case "start":
                         if(acceptThread == null) {
                             start();
-                            System.out.println("server started");
+                            logger.info("server started");
                         } else {
-                            System.out.println("already started");
+                            logger.info("already started");
                         }
                         break;
                     case "stop":
                         if (acceptThread != null) {
                             stop();
                             serverSocket.close();
-                            System.out.println("server stopped");
+                            logger.info("server stopped");
                             return;
                         } else {
-                            System.out.println("nothing to stop");
+                            logger.info("nothing to stop");
                         }
                         break;
                     default:
@@ -71,6 +71,6 @@ public class Server {
     }
 
     private void showHint() {
-        System.out.println("Print <start> to start server, or <stop> to stop:");
+        logger.info("Print <start> to start server, or <stop> to stop:");
     }
 }

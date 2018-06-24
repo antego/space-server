@@ -5,15 +5,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.logging.Logger;
 
 
 public class ProtocolUtils {
+    public static final Logger logger = Logger.getLogger(ProtocolUtils.class.getName());
+
     public static void processMessage(SessionContext context) throws IOException, InterruptedException {
         byte[] message = null;
         while (true) {
             doBusiness(message, context);
-            if (context.getPhase() != SessionContext.SessionPhase.SETUP_WORLD)
-            message = readMessage(context);
+            if (context.getPhase() != SessionContext.SessionPhase.SETUP_WORLD) {
+                message = readMessage(context);
+            }
         }
     }
 
@@ -27,18 +31,19 @@ public class ProtocolUtils {
         int len = inputStream.read(messageType);
         if (len == -1) {
             //todo exit without exception
+            logger.info("End of file while reading type from socket " + context.getMasterThread().getSocket().getInetAddress());
             throw new EOFException();
         }
         byte[] message = new byte[getMessageLength(messageType[0])];
         len = inputStream.read(message);
         if (len == -1) {
             //todo exit without exception
+            logger.info("End of file while reading message from socket " + context.getMasterThread().getSocket().getInetAddress());
             throw new EOFException();
         }
         while (len < getMessageLength(messageType[0])) {
             len += inputStream.read(message, len, getMessageLength(messageType[0]) - len);
         }
-        System.out.println(len);
         return concat(messageType, message);
     }
 
