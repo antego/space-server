@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -12,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class AcceptThread extends Thread {
+public class AcceptThread extends Thread implements AutoCloseable {
     private static final Logger logger = Logger.getLogger(AcceptThread.class.getName());
 
     private final ServerSocket serverSocket;
@@ -37,6 +38,7 @@ public class AcceptThread extends Thread {
 
     @Override
     public void run() {
+        logger.info("Accept thread started");
         try {
             while (!Thread.currentThread().isInterrupted()) {
                 Socket socket = serverSocket.accept();
@@ -72,11 +74,14 @@ public class AcceptThread extends Thread {
         } catch (IOException e) {
             logger.log(Level.INFO, "Exception in accept thread", e);
         }
-        closeAllSockets();
+        close();
         setCleaner.shutdown();
     }
 
-    public void closeAllSockets() {
+    @Override
+    public void close() {
+        logger.info("Close accept thread");
+        this.interrupt();
         synchronized (socketThreadSet) {
             socketThreadSet.stream().forEach((thread) -> {
                 thread.closeSocket();
